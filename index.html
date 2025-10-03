@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Big Mouse • ตัวช่วยคำนวณ/สรุปข้อความ</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon D1.ico">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">🐭 Big Mouse • แจ้งราคา</div>
+    <p class="kicker">กรอกจำนวน → ได้ข้อความพร้อมคัดลอกไปวางให้ลูกค้า</p>
+
+    <div class="grid">
+      <!-- LEFT: Inputs -->
+      <section class="card">
+        <div class="head"><h2>1) ตัวเลือกคำสั่งซื้อ</h2></div>
+
+        <div class="row">
+          <div style="flex:1 1 220px">
+            <label>ประเภทหนู</label>
+            <select id="animal">
+              <option value="mice">Mice</option>
+              <option value="rat">Rat</option>
+            </select>
+          </div>
+          <div class="inline" style="flex:2 1 320px">
+            <span class="pill"><input type="radio" name="ptype" value="retail" checked> <span>ราคาปลีก</span></span>
+            <span class="pill"><input type="radio" name="ptype" value="wholesale"> <span>ราคาส่ง</span></span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1 1 220px">
+            <label>วิธีขนส่ง</label>
+            <select id="shipMethod">
+              <option value="Grab">Grab</option>
+              <option value="Line Man">Line Man</option>
+              <option value="Lalamove">Lalamove</option>
+              <option value="รับเอง">รับเอง</option>
+            </select>
+          </div>
+          <div style="flex:1 1 220px">
+            <label>ค่าส่ง (บาท)</label>
+            <input id="shipCost" type="number" step="1" min="0" value="0">
+            <div class="hint">เลือก “รับเอง” ระบบจะตั้งเป็น 0 อัตโนมัติ</div>
+          </div>
+          <div style="flex:1 1 200px">
+            <label for="promoType">โปรโมชั่น / ส่วนลด</label>
+            <select id="promoType">
+              <option value="none">ไม่มีส่วนลด</option>
+              <option value="baht">ลดเป็นบาท (฿)</option>
+              <option value="percent">ลดเป็นเปอร์เซ็นต์ (%)</option>
+            </select>
+          </div>
+          <div style="flex:1 1 200px">
+            <label for="promoValue">มูลค่าส่วนลด</label>
+            <input id="promoValue" type="number" step="0.01" min="0" value="0">
+            <div class="hint">ตัวอย่าง: 50 = ลด 50 บาท, หรือ 10 = ลด 10%</div>
+          </div>
+          <div style="flex:1 1 260px">
+            <label>ขึ้นต้นข้อความ</label>
+            <input id="msgPrefix" type="text" value="ขออนุญาตแจ้งราคานะครับ 🐭">
+          </div>
+          <div style="flex:1 1 200px">
+            <label>ปิดท้ายข้อความ</label>
+            <input id="msgSuffix" type="text" value="รวม {TOTAL} บาท ครับผม">
+          </div>
+        </div>
+
+        <div class="head" style="margin-top:6px"><h2>2) ใส่จำนวนต่อไซส์</h2><span class="muted">ระบบคูณราคาให้อัตโนมัติ</span></div>
+        <div id="tableWrap"></div>
+      </section>
+
+      <!-- RIGHT: Summary -->
+      <section class="card">
+        <div class="head"><h2>สรุป & ข้อความพร้อมคัดลอก</h2></div>
+
+        <table>
+          <tbody>
+            <tr><td class="muted">รวมค่าสินค้า</td><td id="subTotal">0</td></tr>
+            <tr><td class="muted">ส่วนลด</td><td id="promoTotal">0</td></tr>
+            <tr><td class="muted">ค่าส่ง</td><td id="shipTotal">0</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><td>รวมทั้งสิ้น</td><td class="accent" id="grandTotal">0</td></tr>
+          </tfoot>
+        </table>
+
+        <div style="margin-top:14px">
+          <div class="msg" id="messageBox"></div>
+          <div class="row">
+            <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
+            <button class="btn" id="sendToOA">ส่งเข้าแชต LINE OA</button>
+            <span class="hint" id="copyHint">—</span>
+          </div>
+          <p class="hint">บรรทัดค่าส่งจะแสดงเฉพาะเมื่อค่าส่ง &gt; 0</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+const LIFF_ID = "2008225408-XO62bQRB";
+const DATA = {
+  mice: [
+    ["3XS", 8.00, 7.00],
+    ["2XS", 11.00, 10.00],
+    ["XS", 13.00, 11.00],
+    ["S", 18.00, 15.00],
+    ["M", 23.00, 21.00],
+    ["L", 28.00, 26.00],
+    ["XL", 34.00, 31.00],
+    ["2XL", 38.00, 35.00],
+    ["3XL", 42.00, 40.00],
+  ],
+  rat: [
+    ["S",   35.00, 33.00],
+    ["M1",  40.00, 38.00],
+    ["M2",  45.00, 43.00],
+    ["M3",  50.00, 48.00],
+    ["L1",  55.00, 53.00],
+    ["L2",  60.00, 58.00],
+    ["XL",  65.00, 63.00],
+    ["2XL", 70.00, 68.00],
+    ["3XL", 75.00, 73.00],
+    ["4XL", 85.00, 83.00],
+    ["5XL", 95.00, 93.00],
+    ["JB", 100.00, 98.00],
+  ]
+};
+
+const el = s => document.querySelector(s);
+const fmt = n => Number(n).toLocaleString("th-TH", {minimumFractionDigits:(n%1?2:0), maximumFractionDigits:2});
+
+const tableWrap = el("#tableWrap");
+let qtyInputs = [];
+
+function getDiscount(sub){
+  const type = el('#promoType') ? el('#promoType').value : 'none';
+  const raw = parseFloat(el('#promoValue') ? el('#promoValue').value : '0') || 0;
+  let d = 0;
+  if(type === 'baht') d = Math.max(0, Math.min(raw, sub));
+  else if(type === 'percent') d = Math.max(0, Math.min(100, raw)) * sub / 100;
+  return d;
+}
+
+function buildTable(){
+  const animal = el("#animal").value;
+  const ptype = document.querySelector('input[name="ptype"]:checked').value;
+  const priceIdx = ptype === "retail" ? 1 : 2;
+  qtyInputs = [];
+
+  const rows = DATA[animal].map(([size, retail, whole]) => {
+    const unit = priceIdx===1 ? retail : whole;
+    return `
+      <tr>
+        <td>${size}</td>
+        <td class="muted">${fmt(unit)}</td>
+        <td><input type="number" min="0" step="1" data-size="${size}" data-unit="${unit}" class="qty" value="0" style="width:110px"></td>
+        <td class="line" data-size="${size}">0</td>
+      </tr>
+    `;
+  }).join("");
+
+  tableWrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px">ไซส์</th>
+          <th style="width:120px">ราคาต่อชิ้น</th>
+          <th style="width:150px">จำนวน (ตัว)</th>
+          <th>รวม (บาท)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  qtyInputs = Array.from(document.querySelectorAll(".qty"));
+  qtyInputs.forEach(i=> i.addEventListener("input", recalc));
+  recalc();
+}
+
+function recalc(){
+  const shipMethod = el("#shipMethod").value;
+  const shipCostEl = el("#shipCost");
+  if (shipMethod === "รับเอง"){ shipCostEl.value = 0; shipCostEl.disabled = true; }
+  else { shipCostEl.disabled = false; }
+
+  let sub = 0;
+  qtyInputs.forEach(inp=>{
+    const qty = Math.max(0, parseInt(inp.value||"0",10));
+    const unit = parseFloat(inp.dataset.unit);
+    const line = qty * unit;
+    sub += line;
+    document.querySelector(`.line[data-size="${inp.dataset.size}"]`).textContent = fmt(line);
+  });
+
+  const discount = getDiscount(sub);
+  const ship = Math.max(0, parseFloat(el("#shipCost").value||"0"));
+  const grand = Math.max(0, sub - discount + ship);
+  el("#subTotal").textContent = fmt(sub);
+  if (el("#promoTotal")) el("#promoTotal").textContent = fmt(discount);
+  el("#shipTotal").textContent = fmt(ship);
+  el("#grandTotal").textContent = fmt(grand);
+
+  buildMessage(sub, ship, discount);
+}
+
+function buildMessage(sub, ship, discount){
+  const prefix = el("#msgPrefix").value.trim();
+  const suffixTpl = el("#msgSuffix").value.trim();
+  const shipMethod = el("#shipMethod").value;
+  const isPickup = shipMethod === "รับเอง";
+
+  const ptype = document.querySelector('input[name="ptype"]:checked').value;
+  const pLabel = ptype === "retail" ? "ปลีก" : "ส่ง";
+  const animal = el("#animal").value === "mice" ? "Mice" : "Rat";
+  const header = `${prefix} (${pLabel}) ${animal}`;
+
+  const bodyLines = qtyInputs
+    .map(inp=>{
+      const qty = parseInt(inp.value||"0",10);
+      if(!qty) return "";
+      const size = inp.dataset.size;
+      const unit = parseFloat(inp.dataset.unit);
+      const line = qty * unit;
+      return `${size} ${qty} ตัว ราคา ${fmt(line)} บาท`;
+    })
+    .filter(Boolean);
+
+  if (discount > 0){
+    bodyLines.push(`ส่วนลด ${fmt(discount)} บาท`);
+  }
+  if (ship > 0 && !isPickup){
+    bodyLines.push(`ขนส่ง ${shipMethod} ${fmt(ship)} บาท`);
+  }
+
+  const totalText = suffixTpl.replace("{TOTAL}", fmt(sub - discount + ship));
+  const message = `${header}\n${bodyLines.join("\n")}\n\n${totalText}`.trim();
+  el("#messageBox").textContent = message;
+}
+
+function initEvents(){
+  el("#animal").addEventListener("change", buildTable);
+  document.querySelectorAll('input[name="ptype"]').forEach(r=> r.addEventListener("change", buildTable));
+  el("#shipMethod").addEventListener("change", recalc);
+  el("#shipCost").addEventListener("input", recalc);
+  el("#msgPrefix").addEventListener("input", recalc);
+  el("#msgSuffix").addEventListener("input", recalc);
+  const promoTypeEl = el('#promoType');
+  const promoValEl = el('#promoValue');
+  if (promoTypeEl) promoTypeEl.addEventListener('change', recalc);
+  if (promoValEl) promoValEl.addEventListener('input', recalc);
+
+  el("#copyBtn").addEventListener("click", async ()=>{
+    const msg = el("#messageBox").textContent;
+    try{
+      await navigator.clipboard.writeText(msg);
+      el("#copyHint").textContent = "คัดลอกแล้ว ✓";
+      el("#copyHint").classList.add("ok");
+      setTimeout(()=>{ el("#copyHint").textContent="—"; el("#copyHint").classList.remove("ok"); }, 1600);
+    }catch{
+      el("#copyHint").textContent = "กด Ctrl/Cmd + C เพื่อคัดลอก";
+    }
+  });
+}
+
+initEvents();
+buildTable();
+
+// ---------- LIFF support ----------
+async function initLIFF(){
+  if (!window.liff || !LIFF_ID) return;   // เปิดเว็บธรรมดาก็ยังใช้งานคำนวณได้
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    if (liff.isInClient()){
+      if (!liff.isLoggedIn()) liff.login();
+    }else{
+      console.log("กำลังเปิดนอกแอป LINE (ยังส่งเข้าแชต OA ไม่ได้ แต่คำนวณได้ปกติ)");
+    }
+  }catch(e){
+    console.error("LIFF init error:", e);
+  }
+}
+
+async function sendToCurrentChat(){
+  const msg = document.querySelector("#messageBox")?.textContent?.trim() || "";
+  if(!msg){
+    const hint = document.querySelector("#copyHint");
+    if(hint){ hint.textContent = "ยังไม่มีข้อความให้ส่ง"; }
+    return;
+  }
+  if (!window.liff){
+    alert("ไม่พบ LIFF SDK — โปรดรีเฟรชหน้า");
+    return;
+  }
+  if (!liff.isInClient()){
+    const hint = document.querySelector("#copyHint");
+    if(hint){ hint.textContent = "เปิดผ่านเมนูใน LINE OA เพื่อส่งเข้าแชต"; }
+    return;
+  }
+  try{
+    await liff.sendMessages([{ type: 'text', text: msg }]);
+    const hint = document.querySelector("#copyHint");
+    if(hint){ hint.textContent = "ส่งเข้าแชตแล้ว ✓"; hint.classList.add("ok"); setTimeout(()=>{hint.textContent="—"; hint.classList.remove("ok")},1600); }
+    // liff.closeWindow(); // uncomment ถ้าต้องการปิดหน้าต่างกลับไปแชต
+  }catch(e){
+    console.error("sendMessages error:", e);
+    alert("ส่งข้อความไม่สำเร็จ กรุณาลองใหม่");
+  }
+}
+
+document.getElementById("sendToOA")?.addEventListener("click", sendToCurrentChat);
+initLIFF();
+</script>
+</body>
+</html>
