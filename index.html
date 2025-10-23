@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Big Mouse • ตัวช่วยคำนวณ/สรุปข้อความ</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon D1.ico">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">🐭 Big Mouse • แจ้งราคา</div>
+    <p class="kicker">กรอกจำนวน → ได้ข้อความพร้อมคัดลอกไปวางให้ลูกค้า</p>
+
+    <div class="grid">
+      <!-- LEFT: Inputs -->
+      <section class="card">
+        <div class="head"><h2>1) ตัวเลือกคำสั่งซื้อ</h2></div>
+
+        <div class="row">
+          <div style="flex:1 1 320px">
+            <label>ประเภทหนู (เลือกได้มากกว่า 1)</label>
+            <div id="animalGroup" class="inline">
+              <label class="pill"><input type="checkbox" name="animal" value="mice" checked> <span>Mice</span></label>
+              <label class="pill"><input type="checkbox" name="animal" value="rat"> <span>Rat</span></label>
+            </div>
+          </div>
+          <div class="inline" style="flex:2 1 320px">
+            <span class="pill"><input type="radio" id="retail" name="ptype" value="retail" checked> <span>ราคาปลีก</span></span>
+            <span class="pill"><input type="radio" id="wholesale" name="ptype" value="wholesale"> <span>ราคาส่ง</span></span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1 1 220px">
+            <label>วิธีขนส่ง</label>
+            <select id="shipMethod">
+              <option value="Grab">Grab</option>
+              <option value="Line Man">Line Man</option>
+              <option value="Lalamove">Lalamove</option>
+              <option value="ขนส่งควบคุมอุณหภูมิ">ขนส่งควบคุมอุณหภูมิ</option>
+              <option value="รับเอง">รับเอง</option>
+            </select>
+          </div>
+          <div style="flex:1 1 220px">
+            <label>ค่าส่ง (บาท)</label>
+            <input id="shipCost" type="number" step="1" min="0" value="0">
+            <div class="hint">เลือก “รับเอง” ระบบจะตั้งเป็น 0 อัตโนมัติ</div>
+          </div>
+          <div style="flex:1 1 200px">
+            <label for="promoType">โปรโมชั่น / ส่วนลด</label>
+            <select id="promoType">
+              <option value="none">ไม่มีส่วนลด</option>
+              <option value="baht">ลดเป็นบาท (฿)</option>
+              <option value="percent">ลดเป็นเปอร์เซ็นต์ (%)</option>
+            </select>
+          </div>
+          <div style="flex:1 1 200px">
+            <label for="promoValue">มูลค่าส่วนลด</label>
+            <input id="promoValue" type="number" step="0.01" min="0" value="0">
+            <div class="hint">ตัวอย่าง: 50 = ลด 50 บาท, หรือ 10 = ลด 10%</div>
+          </div>
+          <div style="flex:1 1 260px">
+            <label>ขึ้นต้นข้อความ</label>
+            <input id="msgPrefix" type="text" value="ขออนุญาตแจ้งราคานะครับ 🐭">
+          </div>
+          <div style="flex:1 1 200px">
+            <label>ปิดท้ายข้อความ</label>
+            <input id="msgSuffix" type="text" value="รวม {TOTAL} บาท ครับผม">
+          </div>
+        </div>
+
+        <div id="tableWrap"></div>
+      </section>
+
+      <!-- RIGHT: Summary -->
+      <section class="card">
+        <div class="head"><h2>สรุป & ข้อความพร้อมคัดลอก</h2></div>
+
+        <table>
+          <tbody>
+            <tr><td class="muted">รวมค่าสินค้า</td><td id="subTotal">0</td></tr>
+            <tr><td class="muted">ส่วนลด</td><td id="promoTotal">0</td></tr>
+            <tr><td class="muted">ค่าส่ง</td><td id="shipTotal">0</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><td>รวมทั้งสิ้น</td><td class="accent" id="grandTotal">0</td></tr>
+          </tfoot>
+        </table>
+
+        <div style="margin-top:14px">
+          <div class="msg" id="messageBox"></div>
+          <div class="row">
+            <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
+            <button class="btn btn-secondary" id="showReceiptBtn">ดูใบเสร็จ</button>
+            <button class="btn" id="sendLineBtn">ส่งเข้า LINE OA</button>
+            <span class="hint" id="copyHint">—</span>
+          </div>
+          <p class="hint">บรรทัดค่าส่งจะแสดงเฉพาะเมื่อค่าส่ง &gt; 0</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modal ใบเสร็จ -->
+  <div id="billModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card" role="document">
+      <div class="modal-head">
+        <h3>ใบเสร็จ / e-Bill</h3>
+        <button class="modal-close" id="billClose" aria-label="ปิด">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="billContent" class="receipt"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="billCopy">คัดลอกข้อความใบเสร็จ</button>
+        <button class="btn" id="billDone">ปิดใบเสร็จ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
