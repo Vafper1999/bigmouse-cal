@@ -71,7 +71,7 @@ function buildTable(){
     html += `
       <div class="head" style="margin-top:6px"><h2>${animalLabel(animal)}</h2></div>
       <table><thead><tr>
-        <th>ไซส์</th><th>ราคาต่อชิ้น</th><th>เป็น (ตัว)</th><th>แช่ (ตัว)</th><th>รวม</th>
+        <th>ไซส์</th><th>ราคา</th><th>แช่ (ตัว)</th><th>เป็น (ตัว)</th><th>รวม</th>
       </tr></thead><tbody>${rows}</tbody></table>`;
   });
 
@@ -134,8 +134,8 @@ function buildMessage(sub, ship, discount){
       const unit=parseFloat(f?.dataset.unit||z?.dataset.unit||0);
       const qf=parseInt(f?.value||0,10)||0;
       const qz=parseInt(z?.value||0,10)||0;
-      if(qf) body.push(`[${animalLabel(a)}] ${size} (เป็น) ${qf} ตัว ราคา ${fmt(qf*unit)} บาท`);
-      if(qz) body.push(`[${animalLabel(a)}] ${size} (แช่) ${qz} ตัว ราคา ${fmt(qz*unit)} บาท`);
+      if(qf) body.push(`[${animalLabel(a)}] ${size} (แช่) ${qf} ตัว ราคา ${fmt(qf*unit)} บาท`);
+      if(qz) body.push(`[${animalLabel(a)}] ${size} (เป็น) ${qz} ตัว ราคา ${fmt(qz*unit)} บาท`);
     });
   });
   if(discount>0) body.push(`ส่วนลด ${fmt(discount)} บาท`);
@@ -166,8 +166,8 @@ function buildReceiptHTML(){
       const unit=parseFloat(f?.dataset.unit||z?.dataset.unit||0);
       const qf=parseInt(f?.value||0,10)||0;
       const qz=parseInt(z?.value||0,10)||0;
-      if(qf){const line=qf*unit;sub+=line;html+=`<tr><td>[${animalLabel(a)}] ${size} (เป็น) × ${qf}</td><td>${fmt(line)}</td></tr>`;}
-      if(qz){const line=qz*unit;sub+=line;html+=`<tr><td>[${animalLabel(a)}] ${size} (แช่) × ${qz}</td><td>${fmt(line)}</td></tr>`;}
+      if(qf){const line=qf*unit;sub+=line;html+=`<tr><td>[${animalLabel(a)}] ${size} (แช่) × ${qf}</td><td>${fmt(line)}</td></tr>`;}
+      if(qz){const line=qz*unit;sub+=line;html+=`<tr><td>[${animalLabel(a)}] ${size} (เป็น) × ${qz}</td><td>${fmt(line)}</td></tr>`;}
     });
   });
   const discount=getDiscount(sub);
