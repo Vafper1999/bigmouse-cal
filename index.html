@@ -10,96 +10,134 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="title">🐭 Big Mouse • แจ้งราคา</div>
-    <p class="kicker">กรอกจำนวน → ได้ข้อความพร้อมคัดลอกไปวางให้ลูกค้า</p>
+    <!-- Top Navigation for Backoffice pages -->
+    <header class="top-nav">
+      <div class="nav-title">🐭 Big Mouse • Backoffice</div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-page="calc">คำนวณ / แจ้งราคา</button>
+        <a href="stock.html" class="nav-tab" style="text-decoration:none;">สต็อกสินค้า</a>
+        <button class="nav-tab" data-page="sales">ยอดขายรายวัน</button>
+        <button class="nav-tab" data-page="orders">รายการสั่งซื้อ</button>
+      </nav>
+    </header>
 
-    <div class="grid">
-      <!-- LEFT: Inputs -->
-      <section class="card">
-        <div class="head"><h2>1) ตัวเลือกคำสั่งซื้อ</h2></div>
+    <!-- Page: Calculator / Pricing -->
+    <section id="page-calc" class="page active">
+      <div class="title">🐭 Big Mouse • แจ้งราคา</div>
+      <p class="kicker">กรอกจำนวน → ได้ข้อความพร้อมคัดลอกไปวางให้ลูกค้า</p>
 
-        <div class="row">
-          <div style="flex:1 1 320px">
-            <label>ประเภทหนู (เลือกได้มากกว่า 1)</label>
-            <div id="animalGroup" class="inline">
-              <label class="pill"><input type="checkbox" name="animal" value="mice" checked> <span>Mice</span></label>
-              <label class="pill"><input type="checkbox" name="animal" value="rat"> <span>Rat</span></label>
+      <div class="grid">
+        <!-- LEFT: Inputs -->
+        <section class="card">
+          <div class="head"><h2>1) ตัวเลือกคำสั่งซื้อ</h2></div>
+
+          <div class="row">
+            <div style="flex:1 1 320px">
+              <label>ประเภทหนู (เลือกได้มากกว่า 1)</label>
+              <div id="animalGroup" class="inline">
+                <label class="pill"><input type="checkbox" name="animal" value="mice" checked> <span>Mice</span></label>
+                <label class="pill"><input type="checkbox" name="animal" value="rat"> <span>Rat</span></label>
+              </div>
+            </div>
+            <div class="inline" style="flex:2 1 320px">
+              <span class="pill"><input type="radio" id="retail" name="ptype" value="retail" checked> <span>ราคาปลีก</span></span>
+              <span class="pill"><input type="radio" id="wholesale" name="ptype" value="wholesale"> <span>ราคาส่ง</span></span>
             </div>
           </div>
-          <div class="inline" style="flex:2 1 320px">
-            <span class="pill"><input type="radio" id="retail" name="ptype" value="retail" checked> <span>ราคาปลีก</span></span>
-            <span class="pill"><input type="radio" id="wholesale" name="ptype" value="wholesale"> <span>ราคาส่ง</span></span>
-          </div>
-        </div>
 
-        <div class="row">
-          <div style="flex:1 1 220px">
-            <label>วิธีขนส่ง</label>
-            <select id="shipMethod">
-              <option value="Grab">Grab</option>
-              <option value="Line Man">Line Man</option>
-              <option value="Lalamove">Lalamove</option>
-              <option value="ขนส่งควบคุมอุณหภูมิ">ขนส่งควบคุมอุณหภูมิ</option>
-              <option value="รับเอง">รับเอง</option>
-            </select>
-          </div>
-          <div style="flex:1 1 220px">
-            <label>ค่าส่ง (บาท)</label>
-            <input id="shipCost" type="number" step="1" min="0" value="0">
-            <div class="hint">เลือก “รับเอง” ระบบจะตั้งเป็น 0 อัตโนมัติ</div>
-          </div>
-          <div style="flex:1 1 200px">
-            <label for="promoType">โปรโมชั่น / ส่วนลด</label>
-            <select id="promoType">
-              <option value="none">ไม่มีส่วนลด</option>
-              <option value="baht">ลดเป็นบาท (฿)</option>
-              <option value="percent">ลดเป็นเปอร์เซ็นต์ (%)</option>
-            </select>
-          </div>
-          <div style="flex:1 1 200px">
-            <label for="promoValue">มูลค่าส่วนลด</label>
-            <input id="promoValue" type="number" step="0.01" min="0" value="0">
-            <div class="hint">ตัวอย่าง: 50 = ลด 50 บาท, หรือ 10 = ลด 10%</div>
-          </div>
-          <div style="flex:1 1 260px">
-            <label>ขึ้นต้นข้อความ</label>
-            <input id="msgPrefix" type="text" value="ขออนุญาตแจ้งราคานะครับ 🐭">
-          </div>
-          <div style="flex:1 1 200px">
-            <label>ปิดท้ายข้อความ</label>
-            <input id="msgSuffix" type="text" value="รวม {TOTAL} บาท ครับผม">
-          </div>
-        </div>
-
-        <div id="tableWrap"></div>
-      </section>
-
-      <!-- RIGHT: Summary -->
-      <section class="card">
-        <div class="head"><h2>สรุป & ข้อความพร้อมคัดลอก</h2></div>
-
-        <table>
-          <tbody>
-            <tr><td class="muted">รวมค่าสินค้า</td><td id="subTotal">0</td></tr>
-            <tr><td class="muted">ส่วนลด</td><td id="promoTotal">0</td></tr>
-            <tr><td class="muted">ค่าส่ง</td><td id="shipTotal">0</td></tr>
-          </tbody>
-          <tfoot>
-            <tr><td>รวมทั้งสิ้น</td><td class="accent" id="grandTotal">0</td></tr>
-          </tfoot>
-        </table>
-
-        <div style="margin-top:14px">
-          <div class="msg" id="messageBox"></div>
           <div class="row">
-            <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
-            <button class="btn btn-secondary" id="showReceiptBtn">ดูใบเสร็จ</button>
-            <span class="hint" id="copyHint">—</span>
+            <div style="flex:1 1 220px">
+              <label>วิธีขนส่ง</label>
+              <select id="shipMethod">
+                <option value="Grab">Grab</option>
+                <option value="Line Man">Line Man</option>
+                <option value="Lalamove">Lalamove</option>
+                <option value="ขนส่งควบคุมอุณหภูมิ">ขนส่งควบคุมอุณหภูมิ</option>
+                <option value="รับเอง">รับเอง</option>
+              </select>
+            </div>
+            <div style="flex:1 1 220px">
+              <label>ค่าส่ง (บาท)</label>
+              <input id="shipCost" type="number" step="1" min="0" value="0">
+              <div class="hint">เลือก “รับเอง” ระบบจะตั้งเป็น 0 อัตโนมัติ</div>
+            </div>
+            <div style="flex:1 1 200px">
+              <label for="promoType">โปรโมชั่น / ส่วนลด</label>
+              <select id="promoType">
+                <option value="none">ไม่มีส่วนลด</option>
+                <option value="baht">ลดเป็นบาท (฿)</option>
+                <option value="percent">ลดเป็นเปอร์เซ็นต์ (%)</option>
+              </select>
+            </div>
+            <div style="flex:1 1 200px">
+              <label for="promoValue">มูลค่าส่วนลด</label>
+              <input id="promoValue" type="number" step="0.01" min="0" value="0">
+              <div class="hint">ตัวอย่าง: 50 = ลด 50 บาท, หรือ 10 = ลด 10%</div>
+            </div>
+            <div style="flex:1 1 260px">
+              <label>ขึ้นต้นข้อความ</label>
+              <input id="msgPrefix" type="text" value="ขออนุญาตแจ้งราคานะครับ 🐭">
+            </div>
+            <div style="flex:1 1 200px">
+              <label>ปิดท้ายข้อความ</label>
+              <input id="msgSuffix" type="text" value="รวม {TOTAL} บาท ครับผม">
+            </div>
           </div>
-          <p class="hint">บรรทัดค่าส่งจะแสดงเฉพาะเมื่อค่าส่ง &gt; 0</p>
-        </div>
+
+          <div id="tableWrap"></div>
+        </section>
+
+        <!-- RIGHT: Summary -->
+        <section class="card">
+          <div class="head"><h2>สรุป & ข้อความพร้อมคัดลอก</h2></div>
+
+          <table>
+            <tbody>
+              <tr><td class="muted">รวมค่าสินค้า</td><td id="subTotal">0</td></tr>
+              <tr><td class="muted">ส่วนลด</td><td id="promoTotal">0</td></tr>
+              <tr><td class="muted">ค่าส่ง</td><td id="shipTotal">0</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>รวมทั้งสิ้น</td><td class="accent" id="grandTotal">0</td></tr>
+            </tfoot>
+          </table>
+
+          <div style="margin-top:14px">
+            <div class="msg" id="messageBox"></div>
+            <div class="row">
+              <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
+              <button class="btn btn-secondary" id="showReceiptBtn">ดูใบเสร็จ</button>
+              <span class="hint" id="copyHint">—</span>
+            </div>
+            <p class="hint">บรรทัดค่าส่งจะแสดงเฉพาะเมื่อค่าส่ง &gt; 0</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Page: Stock (placeholder, will add real form later) -->
+    <section id="page-stock" class="page">
+      <section class="card placeholder-card">
+        <h2>สต็อกสินค้า</h2>
+        <p class="hint">หน้านี้จะใช้อัปเดตและดูสต็อกจากชีต Stock 2025 (จะเพิ่มฟอร์มทีหลัง)</p>
       </section>
-    </div>
+    </section>
+
+    <!-- Page: Daily sales (placeholder) -->
+    <section id="page-sales" class="page">
+      <section class="card placeholder-card">
+        <h2>ยอดขายรายวัน</h2>
+        <p class="hint">หน้านี้จะใช้บันทึกยอดขายแยกตามเดือนให้ตรงกับชีตยอดขาย</p>
+      </section>
+    </section>
+
+    <!-- Page: Monthly orders (placeholder) -->
+    <section id="page-orders" class="page">
+      <section class="card placeholder-card">
+        <h2>รายการสั่งซื้อประจำเดือน</h2>
+        <p class="hint">หน้านี้จะใช้เก็บค่าใช้จ่าย/ออเดอร์สั่งของประจำเดือน ตามแพทเทิร์นในชีต</p>
+      </section>
+    </section>
   </div>
 
   <!-- Modal ใบเสร็จ -->

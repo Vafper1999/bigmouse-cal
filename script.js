@@ -63,8 +63,8 @@ function buildTable(){
         <tr>
           <td>${size}</td>
           <td class="muted">${fmt(unit)}</td>
-          <td><input type="number" min="0" step="1" data-animal="${animal}" data-type="fresh" data-size="${size}" data-unit="${unit}" class="qty" value="0"></td>
-          <td><input type="number" min="0" step="1" data-animal="${animal}" data-type="frozen" data-size="${size}" data-unit="${unit}" class="qty" value="0"></td>
+          <td><input type="number" min="0" step="1" data-animal="${animal}" data-type="fresh" data-size="${size}" data-unit="${unit}" class="qty" placeholder="0"></td>
+          <td><input type="number" min="0" step="1" data-animal="${animal}" data-type="frozen" data-size="${size}" data-unit="${unit}" class="qty" placeholder="0"></td>
           <td class="line" data-animal="${animal}" data-size="${size}">0</td>
         </tr>`;
     }).join("");

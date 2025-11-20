@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Big Mouse • สต็อกสินค้า</title>
+  <link rel="stylesheet" href="style_stock.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon D1.ico">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top-nav">
+      <div class="nav-title">🐭 Big Mouse • Backoffice</div>
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab" style="text-decoration:none;">คำนวณ / แจ้งราคา</a>
+        <span class="nav-tab active">สต็อกสินค้า</span>
+        <button class="nav-tab" data-page="sales">ยอดขายรายวัน</button>
+        <button class="nav-tab" data-page="orders">รายการสั่งซื้อ</button>
+      </nav>
+    </header>
+    <div class="title">📦 Big Mouse • สต็อกสินค้า</div>
+    <p class="kicker">อัปเดตจำนวนเข้า–ออก และดูสต็อกคงเหลือจากชีต</p>
+
+    <div class="grid">
+      <!-- LEFT: ตารางสต็อก Mice -->
+      <section class="card">
+        <div class="head">
+          <h2>สต็อก Mice</h2>
+        </div>
+        <div class="stock-table-wrap">
+          <table id="stock-table-mice">
+            <thead>
+              <tr>
+                <th>ไซส์</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS จะเติมสต็อก Mice ที่นี่ -->
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:8px">
+          * ข้อมูลดึงจากชีต "Stock" (เฉพาะ Mice)
+        </p>
+      </section>
+
+      <!-- RIGHT: ตารางสต็อก Rat -->
+      <section class="card">
+        <div class="head">
+          <h2>สต็อก Rat</h2>
+        </div>
+        <div class="stock-table-wrap">
+          <table id="stock-table-rat">
+            <thead>
+              <tr>
+                <th>ไซส์</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS จะเติมสต็อก Rat ที่นี่ -->
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:8px">
+          * ข้อมูลดึงจากชีต "Stock" (เฉพาะ Rat)
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <script src="script_stock.js"></script>
+</body>
+</html>
