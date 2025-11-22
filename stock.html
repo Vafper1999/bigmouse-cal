@@ -18,11 +18,56 @@
         <button class="nav-tab" data-page="orders">รายการสั่งซื้อ</button>
       </nav>
     </header>
+    
     <div class="title">📦 Big Mouse • สต็อกสินค้า</div>
     <p class="kicker">อัปเดตจำนวนเข้า–ออก และดูสต็อกคงเหลือจากชีต</p>
 
+    <section class="card update-card">
+      <div class="head">
+        <h2>จัดการสต็อก (เข้า / ออก)</h2>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <label>วันที่ทำรายการ</label>
+          <input type="date" id="upd-date">
+        </div>
+        <div class="col">
+          <label>ประเภทสัตว์</label>
+          <select id="upd-animal">
+            <option value="" disabled selected>-- เลือก --</option>
+            <option value="Mice">Mice (หนูไมซ์)</option>
+            <option value="Rat">Rat (หนูแรท)</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>ไซส์</label>
+          <select id="upd-size">
+            <option value="" disabled selected>-- รอเลือกประเภท --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>จำนวน</label>
+          <input type="number" id="upd-qty" placeholder="ใส่จำนวน" inputmode="numeric">
+        </div>
+        <div class="col">
+          <label>ทำรายการ</label>
+          <select id="upd-action">
+            <option value="add">➕ เติมสต็อก (เข้า)</option>
+            <option value="remove">➖ ตัดสต็อก (ออก)</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-submit" style="width:100%; margin-top:12px;">
+        บันทึกการเปลี่ยนแปลง
+      </button>
+    </section>
+
     <div class="grid">
-      <!-- LEFT: ตารางสต็อก Mice -->
       <section class="card">
         <div class="head">
           <h2>สต็อก Mice</h2>
@@ -36,16 +81,14 @@
               </tr>
             </thead>
             <tbody>
-              <!-- JS จะเติมสต็อก Mice ที่นี่ -->
-            </tbody>
+              </tbody>
           </table>
         </div>
         <p class="hint" style="margin-top:8px">
-          * ข้อมูลดึงจากชีต "Stock" (เฉพาะ Mice)
+          * ข้อมูลดึงจากชีต "STOCK" (แถว 4)
         </p>
       </section>
 
-      <!-- RIGHT: ตารางสต็อก Rat -->
       <section class="card">
         <div class="head">
           <h2>สต็อก Rat</h2>
@@ -59,12 +102,11 @@
               </tr>
             </thead>
             <tbody>
-              <!-- JS จะเติมสต็อก Rat ที่นี่ -->
-            </tbody>
+              </tbody>
           </table>
         </div>
         <p class="hint" style="margin-top:8px">
-          * ข้อมูลดึงจากชีต "Stock" (เฉพาะ Rat)
+          * ข้อมูลดึงจากชีต "STOCK" (แถว 5)
         </p>
       </section>
     </div>
