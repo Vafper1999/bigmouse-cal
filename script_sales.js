@@ -1,0 +1,235 @@
+// ⚠️ URL ล่าสุดของคุณ
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyUdAIqpSAN1_kkjsCX73bo7muRxX412P-c9R3jdTTqREyM5FuI9M_DfEXxBlGyY_a/exec';
+
+const $ = (id) => document.getElementById(id);
+
+// --- ฐานข้อมูลราคา ---
+const PRICES = {
+  Mice: {
+    retail:    { '3XS':8, '2XS':11, 'XS':13, 'S':18, 'M':23, 'L':28, 'XL':34, '2XL':38, '3XL':42 },
+    wholesale: { '3XS':7, '2XS':10, 'XS':11, 'S':15, 'M':21, 'L':26, 'XL':31, '2XL':35, '3XL':40 }
+  },
+  Rat: {
+    retail:    { 'S':35, 'M1':40, 'M2':45, 'M3':50, 'L1':55, 'L2':60, 'XL':65, '2XL':70, '3XL':75, '4XL':85, '5XL':95, 'JB':100 },
+    wholesale: { 'S':33, 'M1':38, 'M2':43, 'M3':48, 'L1':53, 'L2':58, 'XL':63, '2XL':68, '3XL':73, '4XL':83, '5XL':93, 'JB':98 }
+  }
+};
+
+const MICE_SIZES = Object.keys(PRICES.Mice.retail);
+const RAT_SIZES  = Object.keys(PRICES.Rat.retail);
+
+let cart = []; 
+
+function init() {
+  $('sale-date').value = new Date().toISOString().split('T')[0];
+  updateSizeList();
+}
+
+// --- ส่วนจัดการ Settings (ปุ่มเฟือง) ---
+function openSettings() {
+  $('settings-modal').style.display = 'flex';
+}
+
+function closeSettings() {
+  $('settings-modal').style.display = 'none';
+}
+
+async function saveSettings() {
+  const url = $('sheet-url-input').value;
+  if (!url) return alert('กรุณาวางลิงก์ Google Sheet');
+  
+  if (!url.includes('docs.google.com/spreadsheets')) {
+    return alert('ลิงก์ไม่ถูกต้อง ต้องเป็นลิงก์ Google Sheet เท่านั้น');
+  }
+
+  const btn = event.target;
+  const oldTxt = btn.innerText;
+  btn.innerText = 'กำลังบันทึก...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: 'setSheetUrl', url: url })
+    });
+    
+    const result = await res.json();
+    
+    if (result.status === 'success') {
+      alert('✅ ' + result.message);
+      closeSettings();
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    btn.innerText = oldTxt;
+    btn.disabled = false;
+  }
+}
+// ------------------------------------
+
+function updateSizeList() {
+  const animal = $('prod-animal').value;
+  const sizeSel = $('prod-size');
+  sizeSel.innerHTML = '';
+  
+  const list = (animal === 'Mice') ? MICE_SIZES : RAT_SIZES;
+  list.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    sizeSel.appendChild(opt);
+  });
+  updatePrice();
+}
+
+function updatePrice() {
+  const animal = $('prod-animal').value;
+  const size = $('prod-size').value;
+  const isWholesale = $('type-wholesale').checked;
+  const priceType = isWholesale ? 'wholesale' : 'retail';
+  const price = PRICES[animal][priceType][size] || 0;
+  $('prod-price').value = price;
+}
+
+function addToCart() {
+  const animal = $('prod-animal').value;
+  let size     = $('prod-size').value;
+  const price  = parseFloat($('prod-price').value);
+  const qty    = parseInt($('prod-qty').value);
+  const isLive = $('prod-live').checked; 
+  const isWholesale = $('type-wholesale').checked;
+  
+  if (isWholesale) {
+    size = size + ' w';
+  }
+
+  let promVal = parseFloat($('prom-val').value) || 0;
+  const promType = $('prom-type').value;
+
+  if (!price || !qty || qty <= 0) {
+    alert('กรุณาระบุราคาและจำนวน');
+    return;
+  }
+
+  let discountBaht = 0;
+  let totalRaw = price * qty;
+  
+  if (promVal > 0) {
+    if (promType === 'percent') {
+      discountBaht = totalRaw * (promVal / 100);
+    } else {
+      discountBaht = promVal;
+    }
+  }
+
+  cart.push({ 
+    animal, size, price, qty, isLive,
+    discount: discountBaht,
+    promDisplay: promVal > 0 ? `(ลด ${promVal} ${promType === 'percent'?'%':'บ.'})` : ''
+  });
+
+  $('prod-qty').value = '';
+  $('prom-val').value = '';
+  $('prod-live').checked = false; 
+
+  renderCart();
+}
+
+function renderCart() {
+  const container = $('cart-items');
+  const wrapper = $('cart-container');
+  container.innerHTML = '';
+  
+  if (cart.length === 0) {
+    wrapper.style.display = 'none';
+    $('grand-total').textContent = '0';
+    return;
+  }
+  
+  wrapper.style.display = 'block';
+  let totalNet = 0;
+
+  cart.forEach((item, index) => {
+    const sum = (item.price * item.qty) - item.discount;
+    totalNet += sum;
+    
+    const condition = item.isLive ? '<span style="color:green">[เป็น]</span>' : '<span style="color:blue">[แช่]</span>';
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div>
+        <b>${item.animal} ${item.size}</b> ${condition}<br>
+        ${item.price} x ${item.qty} = ${(item.price * item.qty).toLocaleString()} 
+        <span style="color:red; font-size:12px;">${item.promDisplay ? '- ' + item.discount + ' บ.' : ''}</span>
+      </div>
+      <div style="font-weight:bold;">${sum.toLocaleString()} บ.</div>
+      <div class="cart-del" onclick="remItem(${index})">×</div>
+    `;
+    container.appendChild(div);
+  });
+
+  $('grand-total').textContent = totalNet.toLocaleString();
+}
+
+function remItem(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+async function submitSaleOrder() {
+  if (cart.length === 0) return alert('ตะกร้าว่างเปล่า');
+  
+  const date = $('sale-date').value;
+  const no   = $('sale-no').value;
+  if (!date) return alert('กรุณาเลือกวันที่');
+
+  const btn = $('btn-save');
+  const oldTxt = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳...';
+
+  try {
+    const payload = {
+      action: 'saveSales',
+      date: date,
+      orderNo: no,
+      items: cart,
+      paymentType: $('pay-type').value,
+      shipMethod: $('ship-method').value,
+      shipCost: $('ship-cost').value,
+      shipPaid: $('ship-paid').value
+    };
+
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.status === 'success') {
+      alert('✅ บันทึกสำเร็จ!');
+      cart = [];
+      renderCart();
+      $('sale-no').value = '';
+    } else {
+      throw new Error(result.message);
+    }
+
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldTxt;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', init);

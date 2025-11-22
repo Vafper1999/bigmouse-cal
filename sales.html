@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Big Mouse • บันทึกยอดขาย</title>
+  <link rel="stylesheet" href="style_stock.css" />
+  <link rel="stylesheet" href="style_sales.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon D1.ico">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top-nav">
+      <div class="nav-title">🐭 Big Mouse • Sales</div>
+      
+      <button class="settings-btn" onclick="openSettings()">⚙️</button>
+      
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab" style="text-decoration:none;">แจ้งราคา</a>
+        <a href="stock.html" class="nav-tab" style="text-decoration:none;">สต็อก</a>
+        <span class="nav-tab active">ยอดขาย</span>
+        <a href="sales.html" class="nav-tab" style="text-decoration:none;">สั่งซื้อ</a>
+      </nav>
+    </header>
+    
+    <div class="title">💰 บันทึกยอดขาย</div>
+
+    <section class="card">
+      <div class="head"><h2>1. ข้อมูลบิล</h2></div>
+      <div class="row">
+        <div class="col">
+          <label>วันที่ขาย</label>
+          <input type="date" id="sale-date">
+        </div>
+        <div class="col">
+          <label>เลขที่ออเดอร์ (No.)</label>
+          <input type="text" id="sale-no" placeholder="เช่น 1, 2, A001">
+        </div>
+      </div>
+    </section>
+
+    <section class="card update-card">
+      <div class="head"><h2>2. สินค้า & ราคา</h2></div>
+      
+      <div class="price-mode">
+        <input type="radio" name="priceType" id="type-retail" value="retail" checked onchange="updatePrice()">
+        <label for="type-retail">ขายปลีก (Retail)</label>
+        
+        <input type="radio" name="priceType" id="type-wholesale" value="wholesale" onchange="updatePrice()">
+        <label for="type-wholesale">ขายส่ง (Wholesale)</label>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>ประเภท</label>
+          <select id="prod-animal" onchange="updateSizeList()">
+            <option value="Mice">Mice</option>
+            <option value="Rat">Rat</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>ไซส์</label>
+          <select id="prod-size" onchange="updatePrice()"></select>
+        </div>
+      </div>
+
+      <div class="row live-check-row">
+        <input type="checkbox" id="prod-live" style="width:24px; height:24px; accent-color:var(--accent);">
+        <label for="prod-live" style="margin:0 0 0 10px; font-size:16px; font-weight:bold; color:var(--text); display:flex; align-items:center;">
+          สินค้าเป็น (Live) 
+          <span style="font-weight:normal; color:gray; font-size:14px; margin-left:6px;"> (ถ้าไม่ติ๊ก = แช่แข็ง)</span>
+        </label>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>ราคา/หน่วย</label>
+          <input type="number" id="prod-price" placeholder="บาท">
+        </div>
+        <div class="col">
+          <label>จำนวน</label>
+          <input type="number" id="prod-qty" placeholder="ตัว">
+        </div>
+      </div>
+
+      <div class="row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
+        <div class="col">
+          <label>ส่วนลด (ProM.)</label>
+          <input type="number" id="prom-val" placeholder="ระบุตัวเลข (ถ้ามี)">
+        </div>
+        <div class="col">
+          <label>หน่วยส่วนลด</label>
+          <select id="prom-type">
+            <option value="baht">บาท (Baht)</option>
+            <option value="percent">% เปอร์เซ็นต์</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" onclick="addToCart()" style="width:100%; margin-top:10px; background:var(--text); color:white;">
+        + เพิ่มลงรายการ
+      </button>
+
+      <div id="cart-container" class="cart-list" style="display:none;">
+        <label>รายการที่เพิ่มแล้ว:</label>
+        <div id="cart-items"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head"><h2>3. ชำระ & ส่งของ</h2></div>
+      <div class="row">
+        <div class="col">
+          <label>ช่องทางชำระ</label>
+          <select id="pay-type">
+            <option value="โอน">โอน</option>
+            <option value="เงินสด">เงินสด</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>ขนส่ง</label>
+          <select id="ship-method">
+            <option value="Yourself">มารับเอง (Yourself)</option>
+            <option value="Grab">Grab</option>
+            <option value="Nim Express">Nim Express</option>
+            <option value="Lalamove">Lalamove</option>
+            <option value="EMS">EMS</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>ค่าส่ง (ลูกค้าจ่าย)</label>
+          <input type="number" id="ship-cost" value="0">
+        </div>
+        <div class="col">
+          <label>ค่าส่ง (จ่ายจริง)</label>
+          <input type="number" id="ship-paid" value="0">
+        </div>
+      </div>
+    </section>
+
+    <div class="summary-box">
+      <div class="sum-title">ยอดรวมสุทธิ (หลังหักส่วนลด)</div>
+      <div class="sum-total" id="grand-total">0</div>
+      <div style="font-size:14px;">บาท</div>
+    </div>
+
+    <button class="btn" id="btn-save" onclick="submitSaleOrder()" style="width:100%; margin-top:16px; font-size:18px;">
+      ✅ บันทึกยอดขาย
+    </button>
+    
+    <div style="height:50px;"></div>
+  </div>
+
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <h3 style="margin-top:0;">⚙️ ตั้งค่าไฟล์ข้อมูล</h3>
+      <p style="font-size:14px; color:#666;">
+        เมื่อขึ้นปีใหม่ หรือเปลี่ยนไฟล์ Google Sheet ให้เอาลิงก์ไฟล์ใหม่มาวางที่นี่ครับ
+      </p>
+      
+      <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">
+        Google Sheet URL:
+      </label>
+      <input type="text" id="sheet-url-input" placeholder="https://docs.google.com/spreadsheets/d/..." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-bottom:15px;">
+      
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="saveSettings()" style="flex:1;">บันทึก</button>
+        <button class="btn" onclick="closeSettings()" style="flex:1; background:#ccc; color:#333;">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script_sales.js"></script>
+</body>
+</html>
