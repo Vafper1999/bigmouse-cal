@@ -1,158 +1,105 @@
-// URL Web App ของ Google Apps Script (เช็คว่าเป็น URL ล่าสุดจากการ Deploy)
+// ⚠️ ใช้ URL เดิมได้เลยครับ
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJ2tw3avSP6v1480WAMKL93HSulENpExuKnTY_GQP7_kMBbx4xBegojg8FgR0SXnmRgQ/exec';
 
-// รายการไซส์
 const MICE_SIZES = ['3XS','2XS','XS','S','M','L','XL','2XL','3XL'];
 const RAT_SIZES  = ['S','M1','M2','M3','L1','L2','XL','2XL','3XL','4XL','5XL','JB'];
-
 const $ = (sel) => document.querySelector(sel);
 
-// 1. Render ตาราง
 function renderStockTables(rows) {
   const miceBody = $('#stock-table-mice tbody');
   const ratBody  = $('#stock-table-rat tbody');
-  
   if (!miceBody || !ratBody) return;
+  miceBody.innerHTML = ''; ratBody.innerHTML = '';
 
-  miceBody.innerHTML = '';
-  ratBody.innerHTML = '';
-
-  const addEmptyRow = (tbody, msg) => {
-    tbody.innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center">${msg}</td></tr>`;
-  };
+  const addEmptyRow = (tbody, msg) => { tbody.innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center">${msg}</td></tr>`; };
 
   if (!Array.isArray(rows) || rows.length === 0) {
-    addEmptyRow(miceBody, 'ไม่พบข้อมูล');
-    addEmptyRow(ratBody, 'ไม่พบข้อมูล');
-    return;
+    addEmptyRow(miceBody, 'ไม่พบข้อมูล'); addEmptyRow(ratBody, 'ไม่พบข้อมูล'); return;
   }
 
-  // เรียงลำดับ
   const sorted = [...rows].sort((a, b) => {
     const animalA = (a.animal || '').toLowerCase();
     const animalB = (b.animal || '').toLowerCase();
     if (animalA !== animalB) return animalA === 'mice' ? -1 : 1;
     if (animalA === 'mice') return MICE_SIZES.indexOf(a.size) - MICE_SIZES.indexOf(b.size);
-    if (animalA === 'rat') return RAT_SIZES.indexOf(a.size) - RAT_SIZES.indexOf(b.size);
-    return 0;
+    return RAT_SIZES.indexOf(a.size) - RAT_SIZES.indexOf(b.size);
   });
 
-  let miceCount = 0;
-  let ratCount = 0;
-
-  sorted.forEach(r => {
-    const animal = (r.animal || '').toLowerCase();
-    const stockVal = parseInt(r.stock);
+  let m=0, r=0;
+  sorted.forEach(row => {
+    const animal = (row.animal||'').toLowerCase();
+    const stockVal = parseInt(row.stock);
+    let style = (isNaN(stockVal)||stockVal<=0) ? 'color:red;font-weight:bold;' : (stockVal<5?'color:orange;':'');
     
-    // ตกแต่งสีถ้าของหมด
-    let colorStyle = '';
-    if(isNaN(stockVal) || stockVal <= 0) colorStyle = 'color:red; font-weight:bold;';
-    else if(stockVal < 5) colorStyle = 'color:orange;';
-
-    const tr = `<tr>
-      <td>${r.size || ''}</td>
-      <td style="${colorStyle}">${r.stock ?? 0}</td>
-    </tr>`;
-
-    if (animal === 'mice') {
-      miceBody.innerHTML += tr;
-      miceCount++;
-    } else if (animal === 'rat') {
-      ratBody.innerHTML += tr;
-      ratCount++;
-    }
+    const tr = `<tr><td>${row.size}</td><td style="${style}">${row.stock}</td></tr>`;
+    if(animal==='mice'){ miceBody.innerHTML+=tr; m++; }
+    else if(animal==='rat'){ ratBody.innerHTML+=tr; r++; }
   });
-
-  if(miceCount===0) addEmptyRow(miceBody, 'ไม่มีข้อมูล Mice');
-  if(ratCount===0)  addEmptyRow(ratBody, 'ไม่มีข้อมูล Rat');
+  if(m===0) addEmptyRow(miceBody, 'No Data');
+  if(r===0) addEmptyRow(ratBody, 'No Data');
 }
 
-// 2. โหลดข้อมูล
 async function loadStockTable() {
   try {
-    $('#stock-table-mice tbody').innerHTML = '<tr><td colspan="2" class="hint">...</td></tr>';
-    $('#stock-table-rat tbody').innerHTML  = '<tr><td colspan="2" class="hint">...</td></tr>';
-
+    if($('#stock-table-mice tbody').children.length === 0) $('#stock-table-mice tbody').innerHTML = '<tr><td colspan="2" class="hint">...</td></tr>';
     const res = await fetch(`${SCRIPT_URL}?action=getStock`);
-    if (!res.ok) throw new Error('Network err');
-    
     const data = await res.json();
     renderStockTables(data);
-  } catch (err) {
-    console.error(err);
-    $('#stock-table-mice tbody').innerHTML = '<tr><td colspan="2" style="color:red">โหลดล้มเหลว</td></tr>';
-    $('#stock-table-rat tbody').innerHTML  = '<tr><td colspan="2" style="color:red">โหลดล้มเหลว</td></tr>';
-  }
+  } catch (err) { console.error(err); }
 }
 
-// 3. อัปเดตสต็อก
 async function submitStockUpdate() {
-  const date   = $('#upd-date').value;
+  const date = $('#upd-date').value;
   const animal = $('#upd-animal').value;
-  const size   = $('#upd-size').value;
-  const qty    = $('#upd-qty').value;
-  const action = $('#upd-action').value;
+  const size = $('#upd-size').value;
+  const qty = parseInt($('#upd-qty').value);
 
-  if (!date || !animal || !size || !qty || parseInt(qty) <= 0) {
-    alert('กรุณากรอกข้อมูลให้ครบ (วันที่, ไซส์, จำนวน)');
-    return;
-  }
+  if (!date || !animal || !size || !qty) return alert('กรอกข้อมูลไม่ครบ');
 
   const btn = $('#btn-submit');
-  const oldText = btn.textContent;
   btn.disabled = true;
-  btn.innerHTML = '⏳...';
+  btn.innerText = '⏳...';
 
   try {
     const res = await fetch(SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'updateStock',
-        date: date,
-        animal: animal,
-        size: size,
-        qty: parseInt(qty),
-        type: action
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      // ตัด type ออก เหลือแค่นี้
+      body: JSON.stringify({ 
+        action: 'updateStock', 
+        date: date, 
+        animal: animal, 
+        size: size, 
+        qty: qty 
       })
     });
-
-    const result = await res.json();
-    if (result.status === 'success') {
-      $('#upd-qty').value = ''; // เคลียร์จำนวน แต่เก็บวันที่ไว้
-      await loadStockTable();
-      alert(`✅ บันทึกสำเร็จ! (ยอดเหลือ: ${result.newStock})`);
+    
+    const text = await res.text();
+    let result;
+    try { result = JSON.parse(text); } catch (e) { throw new Error(text); }
+    
+    if (result.status === 'success' || result.ok === true) {
+      alert('✅ เติมสต็อกเรียบร้อย!');
+      $('#upd-qty').value = ''; 
+      await loadStockTable(); 
     } else {
-      alert('❌ Error: ' + result.message);
+      throw new Error(result.message || "Unknown error");
     }
-  } catch (err) {
-    alert('❌ เชื่อมต่อไม่ได้');
+
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = oldText;
+    btn.innerText = 'บันทึกการเติมสต็อก';
   }
 }
 
-// 4. Events
-function wireEvents() {
-  $('#upd-animal').addEventListener('change', (e) => {
-    const val = e.target.value;
-    const sizeSel = $('#upd-size');
-    sizeSel.innerHTML = '<option value="" disabled selected>-- เลือกไซส์ --</option>';
-    
-    const sizes = (val === 'Mice') ? MICE_SIZES : (val === 'Rat') ? RAT_SIZES : [];
-    sizes.forEach(s => {
-      sizeSel.innerHTML += `<option value="${s}">${s}</option>`;
-    });
-  });
-
-  $('#btn-submit').addEventListener('click', submitStockUpdate);
-}
-
-// Start
 window.addEventListener('DOMContentLoaded', () => {
-  // Default Date = Today
   $('#upd-date').value = new Date().toISOString().split('T')[0];
-  
-  wireEvents();
+  $('#upd-animal').addEventListener('change', (e) => {
+    const sizes = e.target.value === 'Mice' ? MICE_SIZES : RAT_SIZES;
+    $('#upd-size').innerHTML = sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+  });
+  $('#btn-submit').addEventListener('click', submitStockUpdate);
   loadStockTable();
 });
