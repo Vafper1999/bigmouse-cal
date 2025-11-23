@@ -3,10 +3,10 @@
   --bg:#ffffff;            /* page background */
   --card:#ffffff;          /* card background */
   --soft:#f3f4f6;          /* light gray surfaces */
-  --accent:#10b981;        /* green for buttons/highlights */
+  --accent:#353535;        /* green for buttons/highlights */
   --text:#111827;          /* near-black text */
   --muted:#6b7280;         /* secondary text */
-  --ok:#10b981;            /* success green */
+  --ok:#353535;            /* success green */
   --border:#e5e7eb;        /* base border color */
   --border-soft:#eceff1;   /* softer border */
   --radius:16px;

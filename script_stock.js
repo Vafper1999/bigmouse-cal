@@ -1,20 +1,52 @@
-// ⚠️ ใช้ URL เดิมได้เลยครับ
+// ⚠️ ใส่ URL ของโปรเจกต์ STOCK เดิม
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJ2tw3avSP6v1480WAMKL93HSulENpExuKnTY_GQP7_kMBbx4xBegojg8FgR0SXnmRgQ/exec';
 
 const MICE_SIZES = ['3XS','2XS','XS','S','M','L','XL','2XL','3XL'];
 const RAT_SIZES  = ['S','M1','M2','M3','L1','L2','XL','2XL','3XL','4XL','5XL','JB'];
 const $ = (sel) => document.querySelector(sel);
 
+// --- Settings ---
+function openSettings() { $('#settings-modal').style.display = 'flex'; }
+function closeSettings() { $('#settings-modal').style.display = 'none'; }
+
+async function saveSettings() {
+  const url = $('#sheet-url-input').value;
+  if (!url) return alert('กรุณาวางลิงก์ Google Sheet');
+  
+  const btn = event.target;
+  const oldTxt = btn.innerText;
+  btn.innerText = 'บันทึก...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: 'setSheetUrl', url: url })
+    });
+    
+    const result = await res.json();
+    if (result.status === 'success') {
+      alert('✅ ' + result.message);
+      closeSettings();
+      loadStockTable(); 
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (err) { alert('❌ Error: ' + err.message); } 
+  finally { btn.innerText = oldTxt; btn.disabled = false; }
+}
+
+// --- Render ---
 function renderStockTables(rows) {
   const miceBody = $('#stock-table-mice tbody');
   const ratBody  = $('#stock-table-rat tbody');
-  if (!miceBody || !ratBody) return;
   miceBody.innerHTML = ''; ratBody.innerHTML = '';
 
-  const addEmptyRow = (tbody, msg) => { tbody.innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center">${msg}</td></tr>`; };
+  const addEmptyRow = (tbody) => tbody.innerHTML = '<tr><td colspan="2" class="hint" style="text-align:center">ไม่พบข้อมูล</td></tr>';
 
   if (!Array.isArray(rows) || rows.length === 0) {
-    addEmptyRow(miceBody, 'ไม่พบข้อมูล'); addEmptyRow(ratBody, 'ไม่พบข้อมูล'); return;
+    addEmptyRow(miceBody); addEmptyRow(ratBody); return;
   }
 
   const sorted = [...rows].sort((a, b) => {
@@ -35,19 +67,25 @@ function renderStockTables(rows) {
     if(animal==='mice'){ miceBody.innerHTML+=tr; m++; }
     else if(animal==='rat'){ ratBody.innerHTML+=tr; r++; }
   });
-  if(m===0) addEmptyRow(miceBody, 'No Data');
-  if(r===0) addEmptyRow(ratBody, 'No Data');
+  if(m===0) addEmptyRow(miceBody);
+  if(r===0) addEmptyRow(ratBody);
 }
 
+// --- Load ---
 async function loadStockTable() {
   try {
-    if($('#stock-table-mice tbody').children.length === 0) $('#stock-table-mice tbody').innerHTML = '<tr><td colspan="2" class="hint">...</td></tr>';
+    if($('#stock-table-mice tbody').children.length === 0) 
+       $('#stock-table-mice tbody').innerHTML = '<tr><td colspan="2" class="hint">...</td></tr>';
+    
     const res = await fetch(`${SCRIPT_URL}?action=getStock`);
     const data = await res.json();
+    
+    if(data.status === 'error') throw new Error(data.message);
     renderStockTables(data);
   } catch (err) { console.error(err); }
 }
 
+// --- Submit ---
 async function submitStockUpdate() {
   const date = $('#upd-date').value;
   const animal = $('#upd-animal').value;
@@ -64,7 +102,6 @@ async function submitStockUpdate() {
     const res = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      // ตัด type ออก เหลือแค่นี้
       body: JSON.stringify({ 
         action: 'updateStock', 
         date: date, 
@@ -74,24 +111,16 @@ async function submitStockUpdate() {
       })
     });
     
-    const text = await res.text();
-    let result;
-    try { result = JSON.parse(text); } catch (e) { throw new Error(text); }
-    
-    if (result.status === 'success' || result.ok === true) {
+    const result = await res.json();
+    if (result.status === 'success') {
       alert('✅ เติมสต็อกเรียบร้อย!');
       $('#upd-qty').value = ''; 
       await loadStockTable(); 
     } else {
-      throw new Error(result.message || "Unknown error");
+      throw new Error(result.message);
     }
-
-  } catch (e) {
-    alert('❌ Error: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = 'บันทึกการเติมสต็อก';
-  }
+  } catch (e) { alert('❌ Error: ' + e.message); } 
+  finally { btn.disabled = false; btn.innerText = 'บันทึกการเติมสต็อก'; }
 }
 
 window.addEventListener('DOMContentLoaded', () => {

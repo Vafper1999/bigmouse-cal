@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Big Mouse • รายการสั่งซื้อ</title>
+  <link rel="stylesheet" href="style_stock.css" />
+  <link rel="stylesheet" href="style_orders.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon D1.ico">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top-nav">
+      <div class="nav-title">🐭 Big Mouse • Orders</div>
+      <button class="settings-btn" onclick="openSettings()">⚙️</button>
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab" style="text-decoration:none;">Pricing</a>
+        <a href="stock.html" class="nav-tab" style="text-decoration:none;">Stock</a>
+        <a href="sales.html" class="nav-tab" style="text-decoration:none;">Sales</a>
+        <span class="nav-tab active">Purchases</span>
+      </nav>
+    </header>
+    
+    <div class="title">📝 บันทึกรายจ่าย</div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card sales"><div class="lbl">Sales</div><div class="val" id="dash-sales">0</div></div>
+      <div class="stat-card expense"><div class="lbl">Expenses</div><div class="val" id="dash-expenses">0</div></div>
+      <div class="stat-card profit"><div class="lbl">Profit</div><div class="val" id="dash-profit">0</div></div>
+      <div class="stat-card balance"><div class="lbl">Balance</div><div class="val" id="dash-balance">0</div></div>
+    </div>
+
+    <section class="card update-card">
+      <div class="head"><h2>เพิ่มรายการใหม่</h2></div>
+      <div class="row"><div class="col"><label>วันที่ซื้อ</label><input type="date" id="order-date" onchange="loadDashboard()"></div></div>
+      <div class="row">
+        <div class="col"><label>รายการสินค้า</label><input type="text" id="order-item"></div>
+        <div class="col"><label>ร้านค้า</label><input type="text" id="order-supplier"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>ราคา/หน่วย</label><input type="number" id="order-price" placeholder="0.00"></div>
+        <div class="col"><label>จำนวน</label><input type="number" id="order-qty" placeholder="1" value="1"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>ค่าขนส่ง</label><input type="number" id="order-shipping" placeholder="0.00"></div>
+        <div class="col"><label>ส่วนลด</label><input type="number" id="order-discount" placeholder="0.00"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>หมายเหตุ</label><input type="text" id="order-note"></div>
+      </div>
+      <div class="total-preview">ยอดรวมสุทธิ: <span id="total-display">0</span> บาท</div>
+      <button class="btn" id="btn-save" onclick="submitOrder()" style="width:100%; margin-top:12px;">✅ บันทึกรายการ</button>
+    </section>
+
+    <section class="card">
+      <div class="head"><h2>รายการเดือนนี้</h2></div>
+      <div class="stock-table-wrap">
+        <table id="order-table">
+          <thead><tr><th>วันที่</th><th>รายการ</th><th>ยอดเงิน</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <div style="height:50px;"></div>
+  </div>
+
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <h3>⚙️ ตั้งค่าไฟล์</h3>
+      <input type="text" id="sheet-url-input" placeholder="https://..." style="width:100%; padding:10px; margin-bottom:10px;">
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="saveSettings()" style="flex:1;">บันทึก</button>
+        <button class="btn" onclick="closeSettings()" style="flex:1; background:#ccc; color:#333;">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script_orders.js"></script>
+</body>
+</html>

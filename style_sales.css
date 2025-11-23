@@ -10,8 +10,9 @@
   background: none;
   border: none;
   padding: 0 10px;
-  margin-right: -10px; /* ชดเชย padding */
+  margin-right: -10px;
   transition: transform 0.3s;
+  color: var(--text); /* เพิ่มสีให้ชัดเจน */
 }
 .settings-btn:hover {
   transform: rotate(90deg);
@@ -19,16 +20,17 @@
 
 /* --- Modal (หน้าต่างเด้ง) --- */
 .modal {
-  display: none; /* ซ่อนไว้ก่อน */
+  display: none;
   position: fixed;
   z-index: 999;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5); /* พื้นหลังดำจางๆ */
+  background-color: rgba(0,0,0,0.5);
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(2px); /* เพิ่มเบลอฉากหลัง */
 }
 .modal-content {
   background-color: #fff;
@@ -38,24 +40,24 @@
   width: 90%;
   max-width: 400px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  animation: slideDown 0.3s ease-out;
+  animation: slideUp 0.3s ease-out; /* เปลี่ยนเป็น Slide Up สวยกว่า */
 }
-@keyframes slideDown {
-  from { transform: translateY(-20px); opacity: 0; }
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 /* --- รายการสินค้าในตะกร้า --- */
 .cart-list {
-  margin-top: 10px;
+  margin-top: 15px;
   border-top: 1px dashed var(--border);
-  padding-top: 10px;
+  padding-top: 15px;
 }
 .cart-item {
   background: var(--soft);
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 14px;
   position: relative;
   border: 1px solid transparent;
@@ -63,20 +65,22 @@
   justify-content: space-between;
   align-items: center;
 }
-.cart-item b { color: var(--text); }
+.cart-item b { color: var(--text); font-size: 15px; }
 
-/* ปุ่มลบ (กากบาท) */
+/* ปุ่มลบ (กากบาท) - ปรับให้กดง่ายบนมือถือ */
 .cart-del {
   color: #ef4444; 
   font-weight: bold;
   cursor: pointer;
-  font-size: 20px;
-  width: 30px;
-  height: 30px;
+  font-size: 24px; /* ใหญ่ขึ้น */
+  width: 40px;     /* เพิ่มพื้นที่กด */
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  margin-right: -10px; /* ชดเชยพื้นที่ขวา */
+  transition: background 0.2s;
 }
 .cart-del:hover { background: #fee2e2; }
 
@@ -87,7 +91,7 @@
   border-radius: 16px;
   padding: 20px;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 25px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 .sum-title {
@@ -98,30 +102,30 @@
   margin-bottom: 6px;
 }
 .sum-total {
-  font-size: 32px;
+  font-size: 36px; /* ตัวเลขใหญ่สะใจ */
   font-weight: 800;
   color: var(--accent);
-  line-height: 1.1;
+  line-height: 1;
 }
 
 /* --- ปุ่ม Toggle Switch (ปลีก/ส่ง) --- */
 .price-mode {
   display: flex;
-  gap: 6px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 20px;
   background: var(--soft);
-  padding: 4px;
+  padding: 5px;
   border-radius: 12px;
   border: 1px solid var(--border);
 }
 .price-mode label {
   flex: 1;
   text-align: center;
-  padding: 10px 4px;
+  padding: 10px;
   border-radius: 9px;
   cursor: pointer;
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
   transition: all 0.2s;
   font-weight: 600;
@@ -134,25 +138,36 @@
   transform: scale(1.02);
 }
 
-/* --- Checkbox "สินค้าเป็น" --- */
+/* --- Checkbox "สินค้าเป็น" (ปรับแต่งพิเศษ) --- */
 .live-check-row {
     display: flex;
     align-items: center;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    padding: 8px;
-    background: #f0fdf4;
-    border-radius: 8px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #f0fdf4; /* เขียวอ่อน */
+    border-radius: 10px;
     border: 1px solid #dcfce7;
 }
 
-/* แก้บั๊ก Checkbox กดไม่ได้ */
+/* แก้บั๊ก Checkbox กดไม่ได้ + ขยายขนาด */
 input[type="checkbox"], 
 input[type="radio"] {
   appearance: auto !important;
-  width: auto !important;
+  width: 24px !important;  /* บังคับขนาดให้ใหญ่ */
+  height: 24px !important;
   padding: 0 !important;
   border: none !important;
   background: transparent !important;
   cursor: pointer;
+  margin-right: 8px;
+}
+
+/* ปรับ Label คู่กับ Checkbox */
+input[type="checkbox"] + label {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
